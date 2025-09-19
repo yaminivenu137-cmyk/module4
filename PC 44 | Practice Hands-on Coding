@@ -1,0 +1,95 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MaterialApp(home: FirestoreFormDemo()));
+}
+
+class FirestoreFormDemo extends StatefulWidget {
+  @override
+  _FirestoreFormDemoState createState() => _FirestoreFormDemoState();
+}
+
+class _FirestoreFormDemoState extends State<FirestoreFormDemo> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+  Future<void> addItem() async {
+    if (_formKey.currentState!.validate()) {
+      await FirebaseFirestore.instance.collection("users").add({
+        "name": _nameController.text,
+        "email": _emailController.text,
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Item Added to Firestore")),
+      );
+      _nameController.clear();
+      _emailController.clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Add Items to Firestore")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: "Enter Name"),
+                validator: (value) =>
+                    value!.isEmpty ? "Please enter a name" : null,
+              ),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: "Enter Email"),
+                validator: (value) =>
+                    value!.isEmpty ? "Please enter an email" : null,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: addItem,
+                child: Text("Add to Firestore"),
+              ),
+              SizedBox(height: 20),
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection("users")
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    final docs = snapshot.data!.docs;
+                    return ListView.builder(
+                      itemCount: docs.length,
+                      itemBuilder: (context, index) {
+                        final data = docs[index].data() as Map<String, dynamic>;
+                        return ListTile(
+                          leading: CircleAvatar(
+                            child: Text(data["name"][0]),
+                          ),
+                          title: Text(data["name"]),
+                          subtitle: Text(data["email"]),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
