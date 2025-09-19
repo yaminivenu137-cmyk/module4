@@ -1,0 +1,64 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MaterialApp(home: MergeListsDemo()));
+}
+
+class MergeListsDemo extends StatefulWidget {
+  @override
+  _MergeListsDemoState createState() => _MergeListsDemoState();
+}
+
+class _MergeListsDemoState extends State<MergeListsDemo> {
+  List<Map<String, String>> list1 = [
+    {
+      "name": "Annu Rathour",
+      "age": "25",
+      "occupation": "mobile application developer"
+    },
+    {"name": "Menu Gupta", "age": "26", "occupation": "rectjs developer"},
+    {"name": "Shubham Sharma", "age": "26", "occupation": "java developer"}
+  ];
+
+  List<Map<String, String>> list2 = [
+    {
+      "name": "Annu Rathour",
+      "age": "25",
+      "occupation": "mobile application developer",
+    },
+    {
+      "name": "Menu Gupta",
+      "age": "26",
+      "occupation": "rectjs developer",
+    },
+    {"name": "Shubham1 Sharma", "age": "26", "occupation": "java developer"}
+  ];
+
+  late List<Map<String, String>> mergedList;
+
+  @override
+  void initState() {
+    super.initState();
+    mergedList = [...list1, ...list2];
+    // remove duplicates
+    mergedList = mergedList.toSet().toList().cast<Map<String, String>>();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Merged List Without Duplicates")),
+      body: ListView.builder(
+        itemCount: mergedList.length,
+        itemBuilder: (context, index) {
+          final item = mergedList[index];
+          return ListTile(
+            title: Text(item["name"] ?? ""),
+            subtitle: Text(
+                "Age: ${item["age"]}, Occupation: ${item["occupation"]}"),
+          );
+        },
+      ),
+    );
+  }
+}
