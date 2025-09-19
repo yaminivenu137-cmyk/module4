@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MaterialApp(home: FirestoreItemsApp()));
+}
+
+class FirestoreItemsApp extends StatefulWidget {
+  @override
+  _FirestoreItemsAppState createState() => _FirestoreItemsAppState();
+}
+
+class _FirestoreItemsAppState extends State<FirestoreItemsApp> {
+  final TextEditingController _itemController = TextEditingController();
+
+  Future<void> addItem() async {
+    if (_itemController.text.isNotEmpty) {
+      await FirebaseFirestore.instance.collection("items").add({
+        "name": _itemController.text,
+        "createdAt": Timestamp.now(),
+      });
+      _itemController.clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Firestore Items")),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _itemController,
+                    decoration: InputDecoration(
+                      labelText: "Enter item name",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: addItem,
+                  child: Text("Add"),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("items")
+                  .orderBy("createdAt", descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                final docs = snapshot.data!.docs;
+                return ListView.builder(
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        child: Text(data["name"][0].toUpperCase()),
+                      ),
+                      title: Text(data["name"]),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
