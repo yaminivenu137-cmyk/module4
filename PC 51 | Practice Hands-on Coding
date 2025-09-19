@@ -1,0 +1,62 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  runApp(MaterialApp(debugShowCheckedModeBanner: false, home: CommentsApp()));
+}
+
+class CommentsApp extends StatefulWidget {
+  @override
+  _CommentsAppState createState() => _CommentsAppState();
+}
+
+class _CommentsAppState extends State<CommentsApp> {
+  List<dynamic> _comments = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchComments();
+  }
+
+  Future<void> fetchComments() async {
+    final response =
+        await http.get(Uri.parse("https://jsonplaceholder.typicode.com/comments"));
+    if (response.statusCode == 200) {
+      setState(() {
+        _comments = json.decode(response.body);
+        _isLoading = false;
+      });
+    } else {
+      throw Exception("Failed to load comments");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("User Comments")),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: _comments.length,
+              itemBuilder: (context, index) {
+                final comment = _comments[index];
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text(comment["name"][0].toUpperCase()),
+                    ),
+                    title: Text(comment["name"],
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(comment["email"]),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
