@@ -1,0 +1,42 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MaterialApp(home: DragDropListDemo()));
+}
+
+class DragDropListDemo extends StatefulWidget {
+  @override
+  _DragDropListDemoState createState() => _DragDropListDemoState();
+}
+
+class _DragDropListDemoState extends State<DragDropListDemo> {
+  // Initial list
+  List<String> items = ["Item1", "Item2", "Item3", "Item4", "Item5"];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Reorderable List Demo")),
+      body: ReorderableListView(
+        children: [
+          for (final item in items)
+            ListTile(
+              key: ValueKey(item), // each item must have a unique key
+              title: Text(item),
+              leading: Icon(Icons.drag_handle), // drag handle
+            )
+        ],
+        onReorder: (oldIndex, newIndex) {
+          setState(() {
+            // If moving down, adjust newIndex
+            if (newIndex > oldIndex) {
+              newIndex -= 1;
+            }
+            final movedItem = items.removeAt(oldIndex);
+            items.insert(newIndex, movedItem);
+          });
+        },
+      ),
+    );
+  }
+}
