@@ -1,0 +1,54 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MaterialApp(home: ListAddDeleteDemo()));
+}
+
+class ListAddDeleteDemo extends StatefulWidget {
+  @override
+  _ListAddDeleteDemoState createState() => _ListAddDeleteDemoState();
+}
+
+class _ListAddDeleteDemoState extends State<ListAddDeleteDemo> {
+  final List<String> _data = ['Item 1', 'Item 2', 'Item 3', 'Item 4'];
+  String? _selectedItem;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Add/Delete List Items")),
+      body: ListView.builder(
+        itemCount: _data.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(_data[index]),
+            selected: _data[index] == _selectedItem,
+            onTap: () {
+              setState(() {
+                _selectedItem = _data[index];
+              });
+            },
+            trailing: IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                setState(() {
+                  _data.removeAt(index);
+                });
+              },
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          if (_selectedItem != null) {
+            setState(() {
+              _data.add(_selectedItem!);
+            });
+          }
+        },
+      ),
+    );
+  }
+}
