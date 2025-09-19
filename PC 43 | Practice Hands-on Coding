@@ -1,0 +1,63 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+
+void main() {
+  runApp(MaterialApp(home: JsonFetchDemo()));
+}
+
+class JsonFetchDemo extends StatefulWidget {
+  @override
+  _JsonFetchDemoState createState() => _JsonFetchDemoState();
+}
+
+class _JsonFetchDemoState extends State<JsonFetchDemo> {
+  List<dynamic> data = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchJsonData();
+  }
+
+  Future<void> fetchJsonData() async {
+    final String response = await rootBundle.loadString('assets/file.json');
+    final jsonData = json.decode(response);
+    setState(() {
+      data = jsonData["Data"];
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Fetch JSON Data")),
+      body: data.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                final item = data[index];
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.yellow,
+                    child: Text(
+                      item["name"][0], // first letter of name
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                  title: Text(item["name"]),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Email: ${item["email"]}"),
+                      Text("Phone: ${item["phoneNumber"]}"),
+                      Text("Roll No: ${item["rollNumber"]}"),
+                    ],
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
