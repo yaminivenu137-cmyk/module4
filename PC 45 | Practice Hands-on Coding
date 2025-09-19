@@ -1,0 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+/// Function to update a document in Firestore
+Future<void> updateDocument(
+    String collectionName, String docId, Map<String, dynamic> newData) async {
+  try {
+    await FirebaseFirestore.instance
+        .collection(collectionName)
+        .doc(docId)
+        .update(newData);
+    print("Document updated successfully!");
+  } catch (e) {
+    print("Error updating document: $e");
+  }
+}
