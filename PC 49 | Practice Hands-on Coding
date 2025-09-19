@@ -1,0 +1,54 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() {
+  runApp(MaterialApp(debugShowCheckedModeBanner: false, home: PersistentTextFieldApp()));
+}
+
+class PersistentTextFieldApp extends StatefulWidget {
+  @override
+  _PersistentTextFieldAppState createState() => _PersistentTextFieldAppState();
+}
+
+class _PersistentTextFieldAppState extends State<PersistentTextFieldApp> {
+  final TextEditingController _controller = TextEditingController();
+  final String _storageKey = "user_input";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedData();
+  }
+
+  /// Load data from local storage
+  Future<void> _loadSavedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _controller.text = prefs.getString(_storageKey) ?? "";
+    });
+  }
+
+  /// Save data to local storage
+  Future<void> _saveData(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_storageKey, value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Persistent TextFormField")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: TextFormField(
+          controller: _controller,
+          decoration: InputDecoration(
+            labelText: "Enter some text",
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) => _saveData(value), // save as user types
+        ),
+      ),
+    );
+  }
+}
